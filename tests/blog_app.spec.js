@@ -78,5 +78,14 @@ test.describe('Blog App', () => {
       await expect(notificationDiv).toHaveCSS('border-style', 'solid')
       await expect(page.getByText('Test Title Mr Test')).not.toBeVisible()
     })
+
+    test('remove button only visible to user who created blog', async ({ page }) => {
+      await createBlog(page, 'Test Title', 'Mr Test', 'http://www.test.com')
+      await page.getByRole('button', { name: 'Logout' }).click()
+
+      await loginWith(page, 'adam', 'eva')
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
+    })
   })
 })
