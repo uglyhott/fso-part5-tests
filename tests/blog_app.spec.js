@@ -51,5 +51,13 @@ test.describe('Blog App', () => {
       await expect(notificationDiv).toHaveCSS('border-style', 'solid')
       await expect(page.getByText('Test Title Mr Test')).toBeVisible()
     })
+
+    test('a blog can be liked', async ({ page }) => {
+      await createBlog(page, 'Test Title', 'Mr Test', 'http://www.test.com')
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByText('likes 0')).toBeVisible()
+      await page.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('likes 1')).toBeVisible()
+    })
   })
 })
