@@ -3,14 +3,14 @@ import { loginWith, createBlog } from './helper'
 
 test.describe('Blog App', () => {
   test.beforeEach(async ({ page, request }) => {
-    await request.post('/api/testing/reset')
+    await request.post('/api/testing/reset'),
     await request.post('/api/users', {
       data: {
         name: 'Test User',
         username: 'tester',
         password: 'tested'
       }
-    })
+    }),
     await request.post('/api/users', {
       data: {
         name: 'Second User',
@@ -86,6 +86,29 @@ test.describe('Blog App', () => {
       await loginWith(page, 'adam', 'eva')
       await page.getByRole('button', { name: 'view' }).click()
       await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
+    })
+  })
+
+  test.describe('With multiple blogs', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginWith(page, 'tester', 'tested')
+    })
+    test('blogs are sorted by likes in descending order', async ({ page }) => {
+      // await page.pause()
+      for (let likeCount = 5; likeCount > 0; likeCount--) {
+        await createBlog(page, `${likeCount}` , 'likes', 'likes.com')
+        const blogPost = page.getByText(`${likeCount} likes`)
+        await blogPost.getByRole('button', { name: 'view' }).click()
+        await blogPost.getByRole('button', { name: 'like' }).click({
+          clickCount: likeCount
+        })
+      }
+      const blogCount = await page.locator('.blog').count()
+      for (let i = 0; i < blogCount; i++) {
+        const blogPost =  page.locator('.blog').locator(`nth=${i}`)
+        // don't need to click view as they are already showing from first loop
+        await expect(blogPost.getByText(`likes ${blogCount - i}`)).toBeVisible()
+      }
     })
   })
 })
