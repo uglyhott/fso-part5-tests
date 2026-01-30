@@ -11,6 +11,13 @@ test.describe('Blog App', () => {
         password: 'tested'
       }
     })
+    await request.post('/api/users', {
+      data: {
+        name: 'Second User',
+        username: 'adam',
+        password: 'eva'
+      }
+    })
 
     await page.goto('/')
   })
@@ -58,6 +65,18 @@ test.describe('Blog App', () => {
       await expect(page.getByText('likes 0')).toBeVisible()
       await page.getByRole('button', { name: 'like' }).click()
       await expect(page.getByText('likes 1')).toBeVisible()
+    })
+
+    test('a blog can be removed', async ({ page }) => {
+      await createBlog(page, 'Test Title', 'Mr Test', 'http://www.test.com')
+      await page.getByRole('button', { name: 'view' }).click()
+      page.on('dialog', dialog => dialog.accept())
+      await page.getByRole('button', { name: 'remove' }).click()
+      
+      const notificationDiv = page.locator('.notification')
+      await expect(notificationDiv).toContainText('Blog removed')
+      await expect(notificationDiv).toHaveCSS('border-style', 'solid')
+      await expect(page.getByText('Test Title Mr Test')).not.toBeVisible()
     })
   })
 })
